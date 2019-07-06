@@ -2,7 +2,7 @@ Metadata-Version: 2.1
 Name: selenium-move-cursor
 Version: 0.0.1
 Summary: Move mouse cursor to element in browser
-Home-page: https://github.com/smirad91/SeleniumMoveCursor
+Home-page: https://github.com/smirad91/SeleniumCursor
 Author: smirad91
 Author-email: smirad91@gmail.com
 License: UNKNOWN
