@@ -1,16 +1,23 @@
 # SeleniumMoveCursor
 Moving cursor to element in browser run by selenium webdriver.
-Currently works for chrome browser, maximized and with no scroll (vertical and horizontal).
-Precondition is to have chrome browser infobar disabled. Python code to achieve this:
+Currently works for chrome browser, maximized. Method to use is move_to_element_chrome.
+
+#Preconditions
+- Chrome is run by selenium webdriver and is maximized
+- Chrome infobar is disabled. Python code to achieve this:
+
+from selenium import webdriver
 
 chrome_options = webdriver.ChromeOptions()
 chrome_options.add_argument("--disable-infobars")
 driver = webdriver.Chrome(chrome_options=chrome_options)
 
-Also display scaling (percentage) need to be given when calling method move_to_element_chrome. 
+- Web element is visible on browser (scroll is done before calling method move_to_element_chrome)
+- Display scaling (100, 125, 150 or 175 %) need to be given when calling method move_to_element_chrome. 
 This info can be found in display settings.
 
-#How to use it:
+#How to use method for moving cursor to web element (move_to_element_chrome):
+
 from selenium import webdriver
 from selenium_move_cursor.MouseActions import move_to_element_chrome
 
