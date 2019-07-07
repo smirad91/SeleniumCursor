@@ -5,7 +5,7 @@ with open("README.md", "r") as fh:
 
 setuptools.setup(
     name="selenium-move-cursor",
-    version="0.0.1",
+    version="0.0.4",
     author="smirad91",
     author_email="smirad91@gmail.com",
     description="Move mouse cursor to element in browser",
