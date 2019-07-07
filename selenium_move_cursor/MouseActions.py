@@ -3,13 +3,17 @@ import pyautogui
 from win32api import GetSystemMetrics
 
 
-def move_to_element_chrome(driver, element, display_scaling=125):
+def move_to_element_chrome(driver, element, display_scaling):
     """
-    Move cursor to top right corner of element
+    Move cursor to middle of element
 
-    :param driver: WebDriver
-    :param element: WebElement
-    :param display_scaling: int
+    :param driver: Chrome driver
+    :type driver: WebDriver
+    :param element: Web element
+    :type element:WebElement
+    :param display_scaling: Display scaling percentage (100, 125, 150 or 175).
+    This info can be found in 'Display settings'.
+    :type display_scaling: int
     :return:
     """
     tab_bar = int(72 * display_scaling / 100) #71 is chrome tab and address bar height when scaling is 100%
