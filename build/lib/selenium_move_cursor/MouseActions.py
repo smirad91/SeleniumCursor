@@ -3,11 +3,21 @@ import pyautogui
 from win32api import GetSystemMetrics
 
 
-def move_to_element_chrome(driver, element, info_bar_shown=True, display_scaling=100):
+def move_to_element_chrome(driver, element, display_scaling=100, chrome_info_bar_shown=True):
     """
-    Move cursor to middle of element
+    Deprecated, because works for chrome and firefox. Use move_to_element method.
+    Left for backward compatibility.
+    """
+    tab_bar = _get_tab_size(driver, chrome_info_bar_shown, display_scaling)
+    x = _get_location_in_pixel(driver, element, tab_bar, display_scaling)["x"]
+    y = _get_location_in_pixel(driver, element, tab_bar, display_scaling)["y"] + tab_bar
+    pyautogui.moveTo(x, y, duration=1)
 
-    :param driver: Chrome driver
+def move_to_element(driver, element, display_scaling=100, chrome_info_bar_shown=True):
+    """
+    Move cursor to middle of element. Works for chrome and firefox
+
+    :param driver: Chrome or Firefox driver
     :type driver: WebDriver
     :param element: Web element
     :type element:WebElement
@@ -16,14 +26,21 @@ def move_to_element_chrome(driver, element, info_bar_shown=True, display_scaling
     :type display_scaling: int
     :return:
     """
-    if info_bar_shown:
-        tab_bar = int(116 * display_scaling / 100)
-    else:
-        tab_bar = int(72 * display_scaling / 100)  # 72 is chrome tab and address bar height when scaling is 100%
-    x = _get_location_in_pixel(driver, element, tab_bar, display_scaling)["x"]
-    y = _get_location_in_pixel(driver, element, tab_bar, display_scaling)["y"] + tab_bar
-    pyautogui.moveTo(x, y, duration=1)
+    move_to_element_chrome(driver, element, display_scaling, chrome_info_bar_shown)
 
+def _get_tab_size(driver, chrome_info_bar_shown, display_scaling):
+    if "firefox" in driver.name:
+        tab_bar = int(74 * display_scaling / 100)
+    else:
+        if chrome_info_bar_shown:
+            tab_bar = int(116 * display_scaling / 100)
+        else:
+            tab_bar = int(72 * display_scaling / 100)  # 72 is chrome tab and address bar height when scaling is 100%
+    return tab_bar
+
+def _get_scroll_size(display_scaling):
+    scroll_size = 16 * display_scaling / 100
+    return scroll_size
 
 def _get_location_in_pixel(driver, element, tab_bar_height, scaling):
     """
@@ -35,7 +52,7 @@ def _get_location_in_pixel(driver, element, tab_bar_height, scaling):
     """
     x_location_inside_of_browser = element.location["x"]
     y_location_inside_of_browser = element.location["y"]
-    scroll_size = 16 * scaling / 100
+    scroll_size = _get_scroll_size(scaling)
     vertical_scroll_size = 0
     horizontal_scroll_size = 0
     if _is_vertical_scroll_on_screen(driver):
@@ -65,8 +82,6 @@ def _is_horizontal_scroll_on_screen(driver):
     inner_height = driver.execute_script("return window.innerHeight")
     if body_height != inner_height:
         horizontal_scroll = True
-    print("horizontal")
-    print(horizontal_scroll)
     return horizontal_scroll
 
 
@@ -82,7 +97,5 @@ def _is_vertical_scroll_on_screen(driver):
     inner_width = driver.execute_script("return window.innerWidth")
     if body_width != inner_width:
         vertical_scroll = True
-    print("vertical")
-    print(vertical_scroll)
     return vertical_scroll
 
