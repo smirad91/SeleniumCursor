@@ -1,6 +1,5 @@
 from win32api import GetMonitorInfo, MonitorFromPoint
 import pyautogui
-from win32api import GetSystemMetrics
 
 
 def move_to_element_chrome(driver, element, display_scaling=100, chrome_info_bar_shown=True):
@@ -31,16 +30,21 @@ def move_to_element(driver, element, display_scaling=100, chrome_info_bar_shown=
 def _get_tab_size(driver, chrome_info_bar_shown, display_scaling):
     if "firefox" in driver.name:
         tab_bar = int(74 * display_scaling / 100)
-    else:
+    elif "chrome" in driver.name:
         if chrome_info_bar_shown:
-            tab_bar = int(116 * display_scaling / 100)
+            tab_bar = int(124 * display_scaling / 100)
         else:
-            tab_bar = int(72 * display_scaling / 100)  # 72 is chrome tab and address bar height when scaling is 100%
+            tab_bar = int(80 * display_scaling / 100)  # 80 is chrome tab and address bar height when scaling is 100%
+    else:
+        raise Exception("Not supported browser. Only chrome and firefox are supported.")
     return tab_bar
 
 def _get_scroll_size(display_scaling):
     scroll_size = 16 * display_scaling / 100
     return scroll_size
+
+def is_maximized(driver):
+    return driver.get_window_position()['y'] == -8 and driver.get_window_position()['x'] == -8
 
 def _get_location_in_pixel(driver, element, tab_bar_height, scaling):
     """
@@ -59,13 +63,16 @@ def _get_location_in_pixel(driver, element, tab_bar_height, scaling):
         vertical_scroll_size = scroll_size
     if _is_horizontal_scroll_on_screen(driver):
         horizontal_scroll_size = scroll_size
-    x_location_in_pixels = (x_location_inside_of_browser + element.size["width"]/2)*(GetSystemMetrics(0)-vertical_scroll_size)/(int(driver.find_element_by_tag_name("html").get_attribute("clientWidth")))
+
+    browser_width_in_pixels = driver.get_window_size()['width'] * scaling/100
+    browser_height_in_pixels = driver.get_window_size()['height'] * scaling / 100
+    x_location_in_pixels = (x_location_inside_of_browser + element.size["width"]/2)*(browser_width_in_pixels-vertical_scroll_size)/(int(driver.find_element_by_tag_name("html").get_attribute("clientWidth"))) + driver.get_window_position()['x']
     monitor_info = GetMonitorInfo(MonitorFromPoint((0, 0)))
     monitor_area = monitor_info.get("Monitor")
     work_area = monitor_info.get("Work")
     task_bar = monitor_area[3] - work_area[3]
     hidden_pixels = driver.execute_script("return window.pageYOffset")
-    y_location_in_pixels = (y_location_inside_of_browser+element.size["height"]/2-hidden_pixels)*(GetSystemMetrics(1)-tab_bar_height-task_bar - horizontal_scroll_size)/int(driver.find_element_by_tag_name("html").get_attribute("clientHeight"))
+    y_location_in_pixels = (y_location_inside_of_browser+element.size["height"]/2-hidden_pixels)*(browser_height_in_pixels-tab_bar_height - horizontal_scroll_size)/int(driver.find_element_by_tag_name("html").get_attribute("clientHeight")) + driver.get_window_position()['y']
 
     return {'x': x_location_in_pixels, 'y': y_location_in_pixels}
 
@@ -78,9 +85,11 @@ def _is_horizontal_scroll_on_screen(driver):
     :return: bool
     """
     horizontal_scroll = False
-    body_height = driver.execute_script("return document.getElementsByTagName('body')[0].clientHeight")
-    inner_height = driver.execute_script("return window.innerHeight")
-    if body_height != inner_height:
+    scroll_width = driver.execute_script("return document.getElementsByTagName('html')[0].scrollWidth")
+    inner_width = driver.execute_script("return window.innerWidth")
+    print("check horisontal scrollbar...")
+    if int(inner_width) < int(scroll_width):
+        print("horisontal scrollbar exist")
         horizontal_scroll = True
     return horizontal_scroll
 
@@ -93,9 +102,10 @@ def _is_vertical_scroll_on_screen(driver):
     :return: bool
     """
     vertical_scroll = False
-    body_width = driver.execute_script("return document.getElementsByTagName('body')[0].clientWidth")
-    inner_width = driver.execute_script("return window.innerWidth")
-    if body_width != inner_width:
+    scroll_height = driver.execute_script("return document.getElementsByTagName('html')[0].scrollHeight")
+    inner_height = driver.execute_script("return window.innerHeight")
+    print("check vertical scrollbar...")
+    if int(scroll_height) > int(inner_height):
+        print("vertical scrollbar exist")
         vertical_scroll = True
     return vertical_scroll
-
